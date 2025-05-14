@@ -3,7 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  apiUrl: 'http://localhost:8000',  // L'API Symfony tourne sur le port 8000
+  googleMaps: {
+    apiKey: 'AIzaSyCZCQD6hAxDjbtYMi6EFjJvqcSycoVUT_w'
+  }
 };
 
 /*

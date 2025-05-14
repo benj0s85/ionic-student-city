@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Inscription</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <ion-item>
+      <ion-label position="floating">Pseudo</ion-label>
+      <ion-input type="text" formControlName="pseudo"></ion-input>
+    </ion-item>
+    <div class="validation-error" *ngIf="registerForm.get('pseudo')?.touched && registerForm.get('pseudo')?.invalid">
+      <div *ngIf="registerForm.get('pseudo')?.errors?.['required']">Le pseudo est requis</div>
+      <div *ngIf="registerForm.get('pseudo')?.errors?.['minlength']">Le pseudo doit contenir au moins 3 caractères</div>
+    </div>
+
+    <ion-item>
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="email" formControlName="email"></ion-input>
+    </ion-item>
+    <div class="validation-error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+      <div *ngIf="registerForm.get('email')?.errors?.['required']">L'email est requis</div>
+      <div *ngIf="registerForm.get('email')?.errors?.['email']">Format d'email invalide</div>
+    </div>
+
+    <ion-item>
+      <ion-label position="floating">Mot de passe</ion-label>
+      <ion-input type="password" formControlName="password"></ion-input>
+    </ion-item>
+    <div class="validation-error" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+      <div *ngIf="registerForm.get('password')?.errors?.['required']">Le mot de passe est requis</div>
+      <div *ngIf="registerForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 6 caractères</div>
+    </div>
+
+    <ion-button expand="block" type="submit" [disabled]="!registerForm.valid" class="ion-margin-top">
+      S'inscrire
+    </ion-button>
+
+    <ion-button expand="block" fill="clear" routerLink="/auth/login" class="ion-margin-top">
+      Déjà un compte ? Se connecter
+    </ion-button>
+  </form>
+</ion-content> 

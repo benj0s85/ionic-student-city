@@ -1,0 +1,531 @@
+// Variables
+:host {
+  --page-margin: 16px;
+  --section-margin: 24px;
+  --border-radius: 12px;
+}
+
+// Styles généraux
+ion-content {
+  --background: #f8f9fa;
+}
+
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--page-margin);
+}
+
+// En-tête et titre
+.title-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(45deg, var(--ion-color-primary), var(--ion-color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+// Section de recherche
+.search-section {
+  margin-bottom: var(--section-margin);
+
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    margin-bottom: 16px;
+  }
+}
+
+// Filtres
+.filters-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .custom-searchbar {
+    flex: 2;
+    --border-radius: var(--border-radius);
+    --box-shadow: none;
+    --background: white;
+    --placeholder-color: var(--ion-color-medium);
+    max-width: 400px;
+  }
+
+  .custom-select {
+    flex: 1;
+    max-width: 200px;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Segments
+.custom-segment {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: var(--section-margin);
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--ion-color-light);
+
+  .custom-segment-button {
+    --background: transparent;
+    --background-checked: var(--ion-color-primary);
+    --color: var(--ion-color-dark);
+    --color-checked: white;
+    --indicator-color: transparent;
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: 500;
+    min-height: 36px;
+    min-width: 120px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    margin: 0;
+    
+    &::part(indicator) {
+      display: none;
+    }
+
+    &::part(native) {
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 100%;
+    }
+
+    ion-icon {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    ion-label {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      color: var(--ion-color-dark);
+    }
+
+    &.segment-button-checked {
+      box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.2);
+      
+      ion-label {
+        color: white;
+      }
+    }
+
+    &:not(.segment-button-checked) {
+      border: 1px solid var(--ion-color-light);
+      
+      &:hover {
+        --color: var(--ion-color-primary);
+        background: rgba(var(--ion-color-primary-rgb), 0.05);
+      }
+    }
+  }
+}
+
+// Table des lieux
+.table-container {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.places-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    background: #f8f9fa;
+    padding: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: left;
+    white-space: nowrap;
+
+    .th-content {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      ion-icon {
+        font-size: 1rem;
+        color: var(--ion-color-primary);
+        margin-left: 4px;
+      }
+    }
+
+    &:hover {
+      background: #f0f0f0;
+    }
+  }
+
+  td {
+    padding: 16px;
+    color: var(--ion-color-dark);
+    border-bottom: 1px solid #eee;
+  }
+
+  .place-row {
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: rgba(var(--ion-color-primary-rgb), 0.05);
+    }
+  }
+
+  .name-cell {
+    .place-icon-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .place-type-icon {
+        font-size: 1.2rem;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  .type-badge {
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    color: var(--ion-color-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .description-cell {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rating-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .stars {
+      display: flex;
+      gap: 2px;
+
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+
+    .rating-value {
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  .reviews-cell {
+    text-align: center;
+
+    ion-badge {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --padding-top: 4px;
+      --padding-bottom: 4px;
+    }
+  }
+
+  .rate-button {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    height: 36px;
+    font-size: 0.9rem;
+
+    ion-icon {
+      margin-right: 4px;
+    }
+  }
+}
+
+// Message pas de résultats
+.no-results {
+  text-align: center;
+  padding: 48px 24px;
+
+  .no-results-icon {
+    font-size: 3rem;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: var(--ion-color-dark);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Carte
+.map-container {
+  height: calc(100vh - 300px);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+// Bouton flottant
+.custom-fab {
+  --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
+  
+  &:hover {
+    --box-shadow: 0 6px 12px rgba(var(--ion-color-primary-rgb), 0.4);
+  }
+}
+
+// Styles pour la liste des lieux
+ion-content {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 8px;
+  --background: #f5f5f5;
+}
+
+ion-item {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  
+  ion-thumbnail {
+    --size: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ion-color-light);
+    border-radius: 8px;
+    
+    ion-icon {
+      font-size: 32px;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  ion-label {
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--ion-color-dark);
+    }
+
+    .type {
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      margin-bottom: 4px;
+    }
+
+    .address {
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+
+    .description {
+      font-size: 14px;
+      color: var(--ion-color-dark);
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .rating-container {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+
+      ion-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 8px;
+        border-radius: 4px;
+
+        ion-icon {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+// Styles pour les filtres
+ion-toolbar:not(:first-child) {
+  --min-height: auto;
+  --padding-top: 0;
+  --padding-bottom: 8px;
+}
+
+ion-searchbar {
+  padding: 0 8px;
+  --border-radius: 8px;
+}
+
+ion-select {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+}
+
+ion-badge {
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+.content-container {
+  display: flex;
+  gap: 20px;
+  height: calc(100% - 80px); // Hauteur totale moins la hauteur des filtres
+  margin-top: 20px;
+}
+
+.list-container {
+  flex: 1;
+  min-width: 0; // Pour éviter le débordement
+  overflow: auto;
+}
+
+// Style pour le marqueur sélectionné
+.selected-marker {
+  animation: bounce 0.5s infinite alternate;
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+// Rendre les lignes du tableau cliquables
+.places-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+
+  &.selected {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+// Style pour les onglets
+ion-segment {
+  --background: var(--ion-color-light);
+  border-radius: 8px;
+  margin: 16px 0;
+
+  ion-segment-button {
+    --indicator-color: var(--ion-color-primary);
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    color: white;
+    font-size: 1.3rem
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Styles pour la fenêtre d'information
+::ng-deep .info-window-content {
+  padding: 8px;
+  max-width: 200px;
+  font-family: var(--ion-font-family);
+
+  .info-window-header {
+    margin-bottom: 8px;
+
+    .info-window-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      line-height: 1.2;
+
+      .place-type-icon {
+        color: var(--ion-color-primary);
+        font-size: 1.1rem;
+      }
+    }
+
+    .info-window-type {
+      display: inline-block;
+      background: rgba(var(--ion-color-primary-rgb), 0.1);
+      color: var(--ion-color-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+  }
+
+  .info-window-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .stars {
+      display: flex;
+      gap: 1px;
+
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+
+    .rating-value {
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      font-size: 0.9rem;
+    }
+  }
+} 
