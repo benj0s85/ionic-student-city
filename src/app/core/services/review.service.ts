@@ -60,6 +60,19 @@ export class ReviewService {
     );
   }
 
+  updateReview(reviewId: number, review: Partial<Review>): Observable<Review> {
+    const reviewData = {
+      rating: parseInt(review.rating!.toString()),
+      commentaire: review.comment || ''
+    };
+
+    return this.http.put<Review>(`${this.API_URL}/api/reviews/${reviewId}`, reviewData, {
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   getUserReviews(): Observable<Review[]> {
     return this.http.get<Review[]>(`${this.API_URL}/api/reviews`, { 
       headers: this.getHeaders(),
@@ -88,6 +101,14 @@ export class ReviewService {
   hasUserReviewedPlace(placeId: number): Observable<boolean> {
     return this.getUserReviews().pipe(
       map(reviews => reviews.some(review => review.placeId === placeId))
+    );
+  }
+
+  deleteReview(reviewId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/api/reviews/${reviewId}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(this.handleError)
     );
   }
 } 
