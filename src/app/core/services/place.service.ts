@@ -6,58 +6,66 @@ import { Place } from '../models/place.model';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
 
+export interface PlaceCreateRequest {
+  name: string;
+  type: 'Restaurant' | 'Bar' | 'Bibliotheque' | 'Salle_sport';
+  adresse: string;
+  description: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class PlaceService {
   private readonly API_URL = environment.apiUrl;
+  private readonly PLACE_TYPES = ['Restaurant', 'Bar', 'Bibliotheque', 'Salle_sport'] as const;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {}
 
-  private handleError(error: HttpErrorResponse) {
-    console.error('Erreur HTTP détaillée:', {
-      error: error.error,
-      status: error.status,
-      statusText: error.statusText,
-      message: error.message,
-      name: error.name,
-      ok: error.ok,
-      headers: error.headers.keys().reduce((acc, key) => ({
-        ...acc,
-        [key]: error.headers.get(key)
-      }), {}),
-      url: error.url
-    });
-    return throwError(() => error);
-  }
-
   private getHeaders(): HttpHeaders {
     const token = this.authService.getToken();
-    console.log('Token d\'authentification:', token ? 'Présent' : 'Absent');
     return new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${token}`);
   }
 
-  private formatPlaceData(place: Place): any {
-    const now = new Date().toISOString();
-    return {
-      name: place.name,
-      type: place.type.toLowerCase(),
-      adresse: place.adresse,
-      description: place.description,
-      statut: 'pending',
-      createAt: now,
-      latitude: place.latitude || null,
-      longitude: place.longitude || null
+  private formatPlaceData(place: Partial<Place>): PlaceCreateRequest {
+    // Vérifier que le type est valide
+    if (!place.type || !this.PLACE_TYPES.includes(place.type as any)) {
+      throw new Error('Type d\'établissement invalide. Les types valides sont : ' + this.PLACE_TYPES.join(', '));
+    }
+
+    // Ne renvoyer que les champs attendus par l'API
+    const formattedData: PlaceCreateRequest = {
+      name: place.name!,
+      type: place.type as PlaceCreateRequest['type'],
+      adresse: place.adresse!,
+      description: place.description!
     };
+
+    // Ajouter les coordonnées si elles sont définies et non nulles
+    if (typeof place.latitude === 'number' && !isNaN(place.latitude)) {
+      formattedData.latitude = place.latitude;
+    }
+    if (typeof place.longitude === 'number' && !isNaN(place.longitude)) {
+      formattedData.longitude = place.longitude;
+    }
+
+    // Log des données formatées
+    console.log('Données formatées pour l\'API:', {
+      original: place,
+      formatted: formattedData
+    });
+
+    return formattedData;
   }
 
   getPlaces(): Observable<Place[]> {
-    console.log('Appel GET pour récupérer tous les lieux');
     return this.http.get<Place[]>(`${this.API_URL}/api/places`, {
       headers: this.getHeaders()
     }).pipe(
@@ -66,7 +74,6 @@ export class PlaceService {
   }
 
   getPlace(id: number): Observable<Place> {
-    console.log(`Appel GET pour récupérer le lieu ${id}`);
     return this.http.get<Place>(`${this.API_URL}/api/places/${id}`, {
       headers: this.getHeaders()
     }).pipe(
@@ -74,72 +81,79 @@ export class PlaceService {
     );
   }
 
-  createPlace(place: Place): Observable<Place> {
+  createPlace(place: Partial<Place>): Observable<Place> {
     const headers = this.getHeaders();
     const url = `${this.API_URL}/api/places`;
-    const placeData = this.formatPlaceData(place);
     
-    console.log('Appel POST pour créer un lieu:', {
-      url,
-      data: placeData,
-      headers: headers.keys().reduce((acc, key) => ({
-        ...acc,
-        [key]: headers.get(key)
-      }), {})
-    });
+    try {
+      const placeData = this.formatPlaceData(place);
+      console.log('Requête complète:', {
+        url,
+        headers: headers.keys().reduce((acc, key) => ({ ...acc, [key]: headers.get(key) }), {}),
+        body: placeData
+      });
 
-    return this.http.post<Place>(url, placeData, {
-      headers,
-      observe: 'response'
-    }).pipe(
-      tap(response => {
-        console.log('Réponse complète du serveur:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: response.body,
-          headers: response.headers.keys().reduce((acc, key) => ({
-            ...acc,
-            [key]: response.headers.get(key)
-          }), {})
-        });
-      }),
-      map(response => response.body as Place),
-      catchError((error: HttpErrorResponse) => {
-        console.error('Erreur HTTP détaillée:', {
-          error: error.error,
-          rawError: JSON.stringify(error.error),
-          status: error.status,
-          statusText: error.statusText,
-          message: error.message,
-          name: error.name,
-          ok: error.ok,
-          headers: error.headers.keys().reduce((acc, key) => ({
-            ...acc,
-            [key]: error.headers.get(key)
-          }), {}),
-          url: error.url
-        });
+      return this.http.post<Place>(url, placeData, { headers }).pipe(
+        tap(response => {
+          console.log('Réponse de l\'API:', response);
+        }),
+        catchError(error => {
+          console.error('Erreur détaillée:', {
+            error: error.error,
+            status: error.status,
+            message: error.message,
+            data: placeData,
+            rawError: error
+          });
 
-        try {
-          if (typeof error.error === 'string') {
-            console.error('Corps de l\'erreur (parsé):', JSON.parse(error.error));
+          if (error instanceof HttpErrorResponse) {
+            let errorMessage = 'Une erreur est survenue';
+            
+            if (error.error) {
+              if (typeof error.error === 'string') {
+                try {
+                  const parsedError = JSON.parse(error.error);
+                  errorMessage = this.formatErrorMessage(parsedError);
+                } catch {
+                  errorMessage = error.error;
+                }
+              } else if (typeof error.error === 'object') {
+                errorMessage = this.formatErrorMessage(error.error);
+              }
+            }
+            
+            return throwError(() => new Error(errorMessage));
           }
-        } catch (e) {
-          console.error('Corps de l\'erreur (brut):', error.error);
-        }
-
-        return throwError(() => error);
-      })
-    );
+          
+          return throwError(() => error);
+        })
+      );
+    } catch (error) {
+      return throwError(() => error);
+    }
   }
 
-  updatePlace(id: number, place: Place): Observable<Place> {
-    console.log(`Appel PUT pour modifier le lieu ${id}:`, {
-      url: `${this.API_URL}/api/places/${id}`,
-      data: place,
-      headers: this.getHeaders()
-    });
-    return this.http.put<Place>(`${this.API_URL}/api/places/${id}`, place, {
+  private formatErrorMessage(error: any): string {
+    if (error.message) {
+      return error.message;
+    }
+    if (error.errors && Array.isArray(error.errors)) {
+      return error.errors.join(', ');
+    }
+    if (error.violations) {
+      return error.violations.map((v: any) => `${v.propertyPath}: ${v.message}`).join(', ');
+    }
+    if (typeof error === 'object') {
+      return Object.entries(error)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+    }
+    return 'Une erreur inconnue est survenue';
+  }
+
+  updatePlace(id: number, place: Partial<Place>): Observable<Place> {
+    const placeData = this.formatPlaceData(place);
+    return this.http.put<Place>(`${this.API_URL}/api/places/${id}`, placeData, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -152,5 +166,16 @@ export class PlaceService {
     }).pipe(
       catchError(this.handleError)
     );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('Erreur HTTP détaillée:', {
+      error: error.error,
+      status: error.status,
+      message: error.message,
+      rawError: error
+    });
+
+    return throwError(() => error);
   }
 } 
