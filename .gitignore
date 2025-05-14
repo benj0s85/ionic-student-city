@@ -1,70 +1,77 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
-
-*~
-*.sw[mnpcod]
-.tmp
-*.tmp
-*.tmp.*
-UserInterfaceState.xcuserstate
-$RECYCLE.BIN/
-
-*.log
-log.txt
-
-
-/.sourcemaps
-/.versions
-/coverage
-
-# Ionic
-/.ionic
-/www
-/platforms
-/plugins
-
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
-
-# Node
+# Dépendances
 /node_modules
-npm-debug.log
-yarn-error.log
+/.pnp
+.pnp.js
 
-# IDEs and editors
-.idea/
+# Production
+/www
+/dist
+/build
+
+# Environnement
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db
+
+# IDE et éditeurs
+/.idea
 .project
 .classpath
 .c9/
 *.launch
 .settings/
-*.sublime-project
 *.sublime-workspace
-
-# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.history/*
 
-
-# Miscellaneous
-/.angular
-/.angular/cache
+# Ionic
+.ionic/
+.angular/
+.cache/
 .sass-cache/
-/.nx
-/.nx/cache
-/connect.lock
-/coverage
+connect.lock
+coverage/
 /libpeerconnection.log
 testem.log
 /typings
 
-# System files
-.DS_Store
-Thumbs.db
+# Capacitor
+/android
+/ios
+/platforms
+/plugins
+
+# API Symfony
+/api/var/
+/api/vendor/
+/api/.env
+/api/.env.local
+/api/.env.*.local
+/api/config/secrets/
+/api/var/cache/*
+/api/var/log/*
+/api/var/sessions/*
+!api/var/cache/.gitkeep
+!api/var/log/.gitkeep
+!api/var/sessions/.gitkeep
+
+# Autres
+*.swp
+*.swo
+*~
