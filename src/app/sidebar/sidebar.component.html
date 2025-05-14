@@ -1,0 +1,42 @@
+<ion-menu side="start" menuId="main-menu" contentId="main-content" *ngIf="authService.isAuthenticated()">
+  <ion-header>
+    <ion-toolbar color="light">
+      <ion-title>
+        <ion-icon name="school-outline"></ion-icon>
+        Students City
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-list>
+      <ion-item routerLink="/profile" routerLinkActive="selected">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        Profil
+      </ion-item>
+      <ion-item routerLink="/places" routerLinkActive="selected">
+        <ion-icon name="business-outline" slot="start"></ion-icon>
+        Établissements
+      </ion-item>
+      <ion-item routerLink="/reviews" routerLinkActive="selected">
+        <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
+        Avis & Notes
+      </ion-item>
+    </ion-list>
+    <ion-list>
+      <ion-item (click)="logout()" lines="none" class="logout">
+        <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
+        <span class="logout-text">Déconnexion</span>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+
+<!-- Bouton pour ouvrir le menu -->
+<ion-header *ngIf="authService.isAuthenticated()">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="main-menu"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Students City</ion-title>
+  </ion-toolbar>
+</ion-header> 

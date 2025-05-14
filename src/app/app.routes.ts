@@ -24,5 +24,15 @@ export const routes: Routes = [
     path: 'places',
     loadChildren: () => import('./pages/places/places.module').then(m => m.PlacesModule),
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'profile',
+    loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfileModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'reviews',
+    loadComponent: () => import('./pages/reviews/reviews.component').then(m => m.ReviewsComponent),
+    canActivate: [AuthGuard]
   }
 ];

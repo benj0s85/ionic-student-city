@@ -6,6 +6,9 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { GoogleMapsModule, MapInfoWindow } from '@angular/google-maps';
+import { ReviewService } from '../../../core/services/review.service';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-places-list',
@@ -31,6 +34,7 @@ export class PlacesListComponent implements OnInit {
   sortBy: string = 'name';
   selectedPlace: Place | null = null;
   selectedView: string = 'list'; // Vue par défaut
+  reviewedPlaces: Set<number> = new Set();
 
   // Configuration de la carte
   center: google.maps.LatLngLiteral = {
@@ -63,14 +67,16 @@ export class PlacesListComponent implements OnInit {
     private router: Router,
     private placeService: PlaceService,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit() {
-    this.loadPlaces();
+    this.loadPlacesAndReviews();
   }
 
-  loadPlaces() {
+  loadPlacesAndReviews() {
+    // Charger les lieux et les avis séparément pour une meilleure gestion des erreurs
     this.placeService.getPlaces().subscribe({
       next: (places) => {
         this.places = places;
@@ -80,6 +86,20 @@ export class PlacesListComponent implements OnInit {
       error: async (error) => {
         const toast = await this.toastController.create({
           message: 'Erreur lors du chargement des lieux',
+          duration: 3000,
+          color: 'danger'
+        });
+        toast.present();
+      }
+    });
+
+    this.reviewService.getUserReviews().subscribe({
+      next: (reviews) => {
+        this.reviewedPlaces = new Set(reviews.map(review => review.placeId));
+      },
+      error: async (error) => {
+        const toast = await this.toastController.create({
+          message: 'Erreur lors du chargement des avis',
           duration: 3000,
           color: 'danger'
         });
@@ -230,7 +250,16 @@ export class PlacesListComponent implements OnInit {
     }
   }
 
+  hasUserReviewedPlace(placeId: number): boolean {
+    return this.reviewedPlaces.has(placeId);
+  }
+
   async ratePlace(place: Place) {
+    if (this.hasUserReviewedPlace(place.id!)) {
+      this.showToast('Vous avez déjà noté cet établissement', 'warning');
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Noter ' + place.name,
       inputs: [
@@ -250,10 +279,7 @@ export class PlacesListComponent implements OnInit {
       buttons: [
         {
           text: 'Annuler',
-          role: 'cancel',
-          handler: () => {
-            return true;
-          }
+          role: 'cancel'
         },
         {
           text: 'Noter',
@@ -273,10 +299,33 @@ export class PlacesListComponent implements OnInit {
     await alert.present();
   }
 
-  private async submitRating(placeId: number, rating: number, comment?: string) {
-    // TODO: Implémenter l'appel API pour soumettre la note
-    this.showToast('Note enregistrée avec succès', 'success');
-    this.loadPlaces(); // Recharger les lieux pour mettre à jour les notes
+  private async submitRating(placeId: number, rating: number, comment: string) {
+    try {
+      await this.reviewService.createReview({
+        placeId,
+        rating,
+        comment
+      }).toPromise();
+      
+      this.showToast('Note enregistrée avec succès', 'success');
+      this.reviewedPlaces.add(placeId); // Ajouter le lieu aux lieux notés
+      this.loadPlacesAndReviews(); // Recharger les données
+    } catch (error: any) {
+      console.error('Erreur lors de l\'enregistrement de la note:', error);
+      console.error('Détails de l\'erreur:', error.error);
+      console.error('Corps de la requête:', {
+        placeId,
+        rating,
+        comment
+      });
+      
+      let errorMessage = 'Erreur lors de l\'enregistrement de la note';
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      }
+      
+      this.showToast(errorMessage, 'danger');
+    }
   }
 
   private async showToast(message: string, color: string) {

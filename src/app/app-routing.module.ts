@@ -12,7 +12,7 @@ const routes: Routes = [
     path: 'auth',
     loadChildren: () => import('./pages/auth/auth.module').then(m => m.AuthModule)
   },
-/*   {
+  {
     path: 'places',
     loadChildren: () => import('./pages/places/places.module').then(m => m.PlacesModule),
     canActivate: [AuthGuard]
@@ -21,7 +21,12 @@ const routes: Routes = [
     path: 'profile',
     loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfileModule),
     canActivate: [AuthGuard]
-  } */
+  },
+  {
+    path: 'reviews',
+    loadChildren: () => import('./pages/reviews/reviews.module').then(m => m.ReviewsModule),  
+    canActivate: [AuthGuard]
+  }
 ];
 
 @NgModule({
