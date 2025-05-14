@@ -61,10 +61,19 @@ export class ReviewService {
   }
 
   getUserReviews(): Observable<Review[]> {
-    return this.http.get<Review[]>(`${this.API_URL}/api/reviews/user`, { 
-      headers: this.getHeaders()
+    return this.http.get<Review[]>(`${this.API_URL}/api/reviews`, { 
+      headers: this.getHeaders(),
+      params: { user: 'current' }
     }).pipe(
-      catchError(this.handleError)
+      tap(reviews => console.log('Avis reçus:', reviews)),
+      catchError(error => {
+        console.error('Erreur détaillée:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        return this.handleError(error);
+      })
     );
   }
 

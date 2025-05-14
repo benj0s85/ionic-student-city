@@ -43,6 +43,10 @@ export class AuthService {
       withCredentials: false
     }).pipe(
       tap(response => {
+        console.log('Login response:', response);
+        if (!response.user.id) {
+          console.error('No user ID in response');
+        }
         localStorage.setItem('token', response.token);
         localStorage.setItem('currentUser', JSON.stringify(response.user));
         this.currentUserSubject.next(response.user);
@@ -62,6 +66,15 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  getUserId(): number | null {
+    const currentUser = this.getCurrentUser();
+    return currentUser?.id ?? null;
   }
 
   updateProfile(userData: Partial<User>): Observable<User> {

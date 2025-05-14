@@ -3,53 +3,115 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Mes Avis & Notes</ion-title>
+    <ion-title>Avis & Notations</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-text color="medium" class="ion-padding">
+      Gestion de vos commentaires et évaluations
+    </ion-text>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-refresher slot="fixed" (ionRefresh)="loadUserReviews()">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
+  <div class="filters-container">
+    <ion-searchbar
+      placeholder="Rechercher..."
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterReviews()"
+      class="custom-searchbar">
+    </ion-searchbar>
 
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Mes avis récents</ion-label>
-    </ion-list-header>
-
-    <ion-item *ngIf="loading">
-      <ion-spinner name="crescent"></ion-spinner>
-      <ion-label class="ion-padding-start">
-        Chargement des avis...
-      </ion-label>
+    <ion-item>
+      <ion-input
+        placeholder="Nom de l'étudiant"
+        [(ngModel)]="studentNameFilter"
+        (ionInput)="filterReviews()"
+        class="custom-input">
+      </ion-input>
     </ion-item>
 
-    <ng-container *ngIf="!loading">
-      <ion-item *ngIf="reviews.length === 0">
-        <ion-label>
-          <h2>Aucun avis pour le moment</h2>
-          <p>Commencez à noter les établissements pour voir vos avis ici</p>
-        </ion-label>
-      </ion-item>
+    <ion-item>
+      <ion-select
+        [(ngModel)]="ratingFilter"
+        (ionChange)="filterReviews()"
+        placeholder="Toutes les notes"
+        class="custom-select">
+        <ion-select-option value="">Toutes les notes</ion-select-option>
+        <ion-select-option value="5">5 étoiles</ion-select-option>
+        <ion-select-option value="4">4 étoiles</ion-select-option>
+        <ion-select-option value="3">3 étoiles</ion-select-option>
+        <ion-select-option value="2">2 étoiles</ion-select-option>
+        <ion-select-option value="1">1 étoile</ion-select-option>
+      </ion-select>
+    </ion-item>
 
-      <ion-item *ngFor="let review of reviews" [routerLink]="['/places', review.placeId]">
-        <ion-label>
-          <h2>{{ review.place?.name }}</h2>
-          <p class="review-type">
-            <ion-icon name="business"></ion-icon>
-            {{ review.place?.type }}
-          </p>
-          <div class="rating">
-            <ion-icon name="star" *ngFor="let star of getStarsArray(review.rating)"></ion-icon>
-            <ion-icon name="star-outline" *ngFor="let star of getEmptyStarsArray(review.rating)"></ion-icon>
-          </div>
-          <p class="review-comment">{{ review.comment }}</p>
-          <p class="review-date">
-            <ion-icon name="time-outline"></ion-icon>
-            {{ formatDate(review.createdAt || '') }}
-          </p>
-        </ion-label>
-      </ion-item>
-    </ng-container>
-  </ion-list>
+    <ion-item>
+      <ion-select
+        [(ngModel)]="typeFilter"
+        (ionChange)="filterReviews()"
+        placeholder="Tous"
+        class="custom-select">
+        <ion-select-option value="">Tous</ion-select-option>
+        <ion-select-option value="restaurant">Restaurant</ion-select-option>
+        <ion-select-option value="bar">Bar</ion-select-option>
+        <ion-select-option value="cafe">Café</ion-select-option>
+        <ion-select-option value="musee">Musée</ion-select-option>
+        <ion-select-option value="parc">Parc</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <div class="table-container">
+    <table class="reviews-table">
+      <thead>
+        <tr>
+          <th>Établissement</th>
+          <th>Note</th>
+          <th>Commentaire</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="5" class="loading-cell">
+            <ion-spinner></ion-spinner>
+            <span>Chargement des avis...</span>
+          </td>
+        </tr>
+        
+        <tr *ngIf="!loading && filteredReviews.length === 0">
+          <td colspan="5" class="empty-cell">
+            Aucun avis trouvé
+          </td>
+        </tr>
+
+        <tr *ngFor="let review of filteredReviews">
+          <td class="establishment-cell">
+            {{ review.place?.name }}
+          </td>
+          <td class="rating-cell">
+            <div class="stars">
+              <ion-icon 
+                *ngFor="let star of [1,2,3,4,5]"
+                [name]="star <= review.rating ? 'star' : 'star-outline'"
+                [color]="star <= review.rating ? 'warning' : 'medium'">
+              </ion-icon>
+            </div>
+            <span class="rating-value">{{ review.rating }}.0</span>
+          </td>
+          <td class="comment-cell">{{ review.comment }}</td>
+          <td class="date-cell">{{ formatDate(review.createdAt) }}</td>
+          <td class="actions-cell">
+            <ion-button fill="clear" color="primary" (click)="editReview(review)">
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" color="danger" (click)="deleteReview(review)">
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </ion-content> 

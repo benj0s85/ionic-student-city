@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { ReviewsComponent } from './pages/reviews/reviews.component';
 
 const routes: Routes = [
   {
@@ -24,7 +25,7 @@ const routes: Routes = [
   },
   {
     path: 'reviews',
-    loadChildren: () => import('./pages/reviews/reviews.module').then(m => m.ReviewsModule),  
+    component: ReviewsComponent,
     canActivate: [AuthGuard]
   }
 ];
