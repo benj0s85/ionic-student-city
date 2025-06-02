@@ -35,3 +35,90 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* Custom global styles */
+:root {
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+  --ion-safe-area-left: env(safe-area-inset-left);
+  --ion-safe-area-right: env(safe-area-inset-right);
+  
+  /* Ajout de variables personnalisées */
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255,255,255;
+  --ion-text-color: #000000;
+  --ion-text-color-rgb: 0,0,0;
+}
+
+/* Styles de base */
+ion-content {
+  --background: var(--ion-background-color);
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+ion-app {
+  background-color: var(--ion-background-color);
+}
+
+/* Styles pour le contenu principal */
+#main-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ion-background-color);
+}
+
+/* Styles pour les éléments de formulaire */
+ion-input, ion-textarea {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  margin: 8px 0;
+  border-radius: 8px;
+  --background: var(--ion-color-light);
+}
+
+ion-button {
+  --border-radius: 8px;
+  margin: 16px 0;
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+}
+
+/* Styles pour les cartes */
+ion-card {
+  margin: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--ion-background-color);
+}
+
+/* Styles pour l'en-tête */
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-background-color);
+    --border-style: none;
+  }
+}
+
+/* Corrections pour iOS */
+.ios {
+  ion-header {
+    padding-top: var(--ion-safe-area-top);
+  }
+  
+  ion-footer {
+    padding-bottom: var(--ion-safe-area-bottom);
+  }
+}
+
+/* Corrections pour Android */
+.md {
+  ion-item {
+    --ripple-color: var(--ion-color-primary);
+  }
+  
+  ion-content {
+    --padding-top: 16px;
+  }
+}

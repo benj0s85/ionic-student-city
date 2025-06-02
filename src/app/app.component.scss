@@ -1,0 +1,29 @@
+ion-app {
+  ion-content {
+    --background: var(--ion-background-color);
+  }
+}
+
+#main-content {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--ion-background-color);
+}
+
+ion-menu {
+  --width: 280px;
+  --background: var(--ion-background-color);
+  
+  ion-content {
+    --background: var(--ion-background-color);
+  }
+}
+
+ion-header {
+  background: var(--ion-background-color);
+  
+  ion-toolbar {
+    --background: var(--ion-background-color);
+  }
+}

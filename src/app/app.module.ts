@@ -10,7 +10,11 @@ import { AppRoutingModule } from './app-routing.module';
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({
+      mode: 'md',
+      rippleEffect: true,
+      animated: true
+    }),
     AppRoutingModule,
     HttpClientModule
   ],
