@@ -41,9 +41,6 @@ export class AppComponent {
       if (this.platform.is('capacitor')) {
         await StatusBar.setBackgroundColor({ color: '#3880ff' });
       }
-
-      // Redirection vers la page de connexion
-      this.router.navigate(['/auth/login']);
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de l\'app:', err);
     }
