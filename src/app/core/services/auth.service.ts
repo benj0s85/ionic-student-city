@@ -80,21 +80,31 @@ export class AuthService {
   }
 
   updateProfile(userData: Partial<User>): Observable<User> {
+    const userId = this.getUserIdFromToken();
+    if (!userId) {
+      return throwError(() => new Error('ID utilisateur non trouvé'));
+    }
+
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${this.getToken()}`);
 
-    return this.http.put<User>(`${this.API_URL}/api/profile`, userData, { 
+    return this.http.put<User>(`${this.API_URL}/api/profile/${userId}`, userData, { 
       headers,
       withCredentials: false
     }).pipe(
       tap(updatedUser => {
+        console.log('Profil mis à jour avec succès:', updatedUser);
         const currentUser = this.currentUserSubject.value;
         if (currentUser) {
           const newUser = { ...currentUser, ...updatedUser };
           localStorage.setItem('currentUser', JSON.stringify(newUser));
           this.currentUserSubject.next(newUser);
         }
+      }),
+      catchError(error => {
+        console.error('Erreur lors de la mise à jour du profil:', error);
+        return this.handleError(error);
       })
     );
   }

@@ -82,12 +82,17 @@ export class ProfileComponent implements OnInit {
     if (this.updateForm.valid && this.updateForm.dirty) {
       const data: Partial<User> = this.updateForm.value;
       try {
-        await this.authService.updateProfile(data).toPromise();
+        console.log('Tentative de mise à jour du profil avec les données:', data);
+        const updatedUser = await this.authService.updateProfile(data).toPromise();
+        console.log('Profil mis à jour avec succès:', updatedUser);
         await this.showToast('Profil mis à jour avec succès', 'success');
+        this.updateForm.markAsPristine();
       } catch (error) {
         console.error('Erreur lors de la mise à jour du profil:', error);
         await this.showToast('Erreur lors de la mise à jour du profil', 'danger');
       }
+    } else {
+      await this.showToast('Veuillez modifier au moins un champ', 'warning');
     }
   }
 
@@ -119,7 +124,7 @@ export class ProfileComponent implements OnInit {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  private async showToast(message: string, color: 'success' | 'danger') {
+  private async showToast(message: string, color: 'success' | 'danger' | 'warning') {
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
