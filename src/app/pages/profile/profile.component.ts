@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, take } from 'rxjs/operators';
 import { User } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { addIcons } from 'ionicons';
@@ -22,191 +22,8 @@ import {
   standalone: true,
   imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule],
   selector: 'app-profile',
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button>
-            <ion-icon name="menu-outline"></ion-icon>
-          </ion-menu-button>
-        </ion-buttons>
-        <ion-title>Mon Profil</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <ng-container *ngIf="(user$ | async) as user">
-        <div class="profile-header">
-          <div class="avatar">
-            <ion-icon name="person-outline" size="large"></ion-icon>
-          </div>
-          <div class="user-info">
-            <h2>{{ user.pseudo }}</h2>
-            <p>{{ user.email }}</p>
-            <ion-badge color="primary">{{ user.status || 'En attente' }}</ion-badge>
-          </div>
-        </div>
-
-        <ion-segment [(ngModel)]="currentSegment" (ionChange)="segmentChanged($event)">
-          <ion-segment-button value="info">
-            <ion-label>Informations</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="password">
-            <ion-label>Mot de passe</ion-label>
-          </ion-segment-button>
-        </ion-segment>
-
-        <div [ngSwitch]="currentSegment">
-          <div *ngSwitchCase="'info'">
-            <form [formGroup]="updateForm" (ngSubmit)="onUpdateProfile()" class="form-container">
-              <ion-item>
-                <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label position="floating">Pseudo</ion-label>
-                <ion-input formControlName="pseudo" type="text"></ion-input>
-                <ion-note slot="error" *ngIf="updateForm.get('pseudo')?.errors?.['required'] && updateForm.get('pseudo')?.touched">
-                  Le pseudo est requis
-                </ion-note>
-                <ion-note slot="error" *ngIf="updateForm.get('pseudo')?.errors?.['minlength'] && updateForm.get('pseudo')?.touched">
-                  Le pseudo doit contenir au moins 3 caractères
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-icon name="mail-outline" slot="start"></ion-icon>
-                <ion-label position="floating">Email</ion-label>
-                <ion-input formControlName="email" type="email"></ion-input>
-                <ion-note slot="error" *ngIf="updateForm.get('email')?.errors?.['email'] && updateForm.get('email')?.touched">
-                  Format d'email invalide
-                </ion-note>
-              </ion-item>
-
-              <ion-button expand="block" type="submit" [disabled]="!updateForm.valid || updateForm.pristine" class="ion-margin-top">
-                <ion-icon name="save-outline" slot="start"></ion-icon>
-                Mettre à jour
-              </ion-button>
-            </form>
-          </div>
-
-          <div *ngSwitchCase="'password'">
-            <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="form-container">
-              <ion-item>
-                <ion-icon name="key-outline" slot="start"></ion-icon>
-                <ion-label position="floating">Ancien mot de passe</ion-label>
-                <ion-input formControlName="oldPassword" type="password"></ion-input>
-                <ion-note slot="error" *ngIf="passwordForm.get('oldPassword')?.errors?.['required'] && passwordForm.get('oldPassword')?.touched">
-                  L'ancien mot de passe est requis
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-icon name="key-outline" slot="start"></ion-icon>
-                <ion-label position="floating">Nouveau mot de passe</ion-label>
-                <ion-input formControlName="newPassword" type="password"></ion-input>
-                <ion-note slot="error" *ngIf="passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched">
-                  Le nouveau mot de passe est requis
-                </ion-note>
-                <ion-note slot="error" *ngIf="passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched">
-                  Le mot de passe doit contenir au moins 6 caractères
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
-                <ion-label position="floating">Confirmer le nouveau mot de passe</ion-label>
-                <ion-input formControlName="confirmPassword" type="password"></ion-input>
-                <ion-note slot="error" *ngIf="passwordForm.get('confirmPassword')?.errors?.['required'] && passwordForm.get('confirmPassword')?.touched">
-                  La confirmation du mot de passe est requise
-                </ion-note>
-                <ion-note slot="error" *ngIf="passwordForm.errors?.['passwordMismatch']">
-                  Les mots de passe ne correspondent pas
-                </ion-note>
-              </ion-item>
-
-              <ion-button expand="block" type="submit" [disabled]="!passwordForm.valid" class="ion-margin-top">
-                <ion-icon name="save-outline" slot="start"></ion-icon>
-                Changer le mot de passe
-              </ion-button>
-            </form>
-          </div>
-        </div>
-      </ng-container>
-    </ion-content>
-  `,
-  styles: [`
-    .profile-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding: 1rem;
-      background: var(--ion-color-light);
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: var(--ion-color-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 1rem;
-
-      ion-icon {
-        font-size: 40px;
-        color: white;
-      }
-    }
-
-    .user-info {
-      h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--ion-color-dark);
-      }
-
-      p {
-        margin: 0.5rem 0;
-        color: var(--ion-color-medium);
-      }
-
-      ion-badge {
-        text-transform: capitalize;
-      }
-    }
-
-    ion-segment {
-      margin-bottom: 1rem;
-    }
-
-    .form-container {
-      margin-top: 1rem;
-    }
-
-    ion-item {
-      --padding-start: 0;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      --background: var(--ion-color-light);
-
-      ion-icon {
-        color: var(--ion-color-primary);
-      }
-    }
-
-    ion-button {
-      margin-top: 1.5rem;
-      --border-radius: 8px;
-    }
-
-    ion-note {
-      color: var(--ion-color-danger);
-      font-size: 0.8rem;
-      margin-top: 0.25rem;
-    }
-  `]
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit {
   user$: Observable<User | null>;
@@ -275,9 +92,17 @@ export class ProfileComponent implements OnInit {
   }
 
   async onChangePassword() {
+    console.log('Current User:', this.authService.getCurrentUser());
+    console.log('Token:', this.authService.getToken());
     if (this.passwordForm.valid) {
       const { oldPassword, newPassword } = this.passwordForm.value;
       try {
+        const userId = this.authService.getUserIdFromToken();
+        if (!userId) {
+          throw new Error('ID utilisateur non trouvé dans le token');
+        }
+
+        await this.authService.changePassword(userId, oldPassword, newPassword).toPromise();
         await this.showToast('Mot de passe modifié avec succès', 'success');
         this.passwordForm.reset();
         this.currentSegment = 'info';
