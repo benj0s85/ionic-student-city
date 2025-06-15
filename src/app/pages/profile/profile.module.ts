@@ -11,4 +11,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes), ProfileComponent],
   exports: [RouterModule]
 })
-export class ProfileModule { } 
+export class ProfileModule { }  
