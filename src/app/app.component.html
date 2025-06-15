@@ -1,6 +1,6 @@
 <ion-app>
-  <app-sidebar></app-sidebar>
-  <div class="ion-page" id="main-content">
-    <ion-router-outlet></ion-router-outlet>
+  <div *ngIf="isOffline" class="offline-banner">
+    Mode hors-ligne
   </div>
+  <ion-router-outlet></ion-router-outlet>
 </ion-app>

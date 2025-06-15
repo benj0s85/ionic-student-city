@@ -1,5 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title class="ion-text-center">
       <span class="title-text">Découvrez les Lieux</span>
     </ion-title>
@@ -7,24 +10,45 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="main-container">
+  <!-- Offline Message -->
+  <div *ngIf="!isOnline && !isLoading" class="offline-container ion-padding ion-text-center">
+    <ion-icon name="cloud-offline-outline" size="large" color="medium"></ion-icon>
+    <h2>Mode hors-ligne</h2>
+    <p>Vous n'êtes actuellement pas connecté à internet.</p>
+    <p>Les fonctionnalités peuvent être limitées. Affichage des données locales si disponibles.</p>
+    <!-- <ion-button (click)="loadPlacesAndReviews()" fill="outline" *ngIf="!isLoading">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Réessayer de charger
+    </ion-button> -->
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading && isOnline" class="loading-container ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Chargement des lieux...</p>
+  </div>
+
+  <!-- Main Content (Online or Cached) -->
+  <div *ngIf="!isLoading" class="main-container">
+    <!-- Search and Filters (can work on cached data too) -->
     <div class="search-section">
       <h2 class="section-title">Trouvez votre lieu idéal</h2>
-      
       <div class="filters-container">
-        <ion-searchbar [(ngModel)]="searchTerm" 
-                      (ionInput)="filterPlaces()"
-                      placeholder="Rechercher un lieu..."
-                      class="custom-searchbar"
-                      mode="ios">
+        <ion-searchbar [(ngModel)]="searchTerm"
+                       (ionInput)="filterPlaces()"
+                       placeholder="Rechercher un lieu..."
+                       class="custom-searchbar"
+                       mode="ios"
+                       [disabled]="!isOnline && filteredPlaces.length === 0">
         </ion-searchbar>
 
-        <ion-select [(ngModel)]="selectedType" 
-                    (ionChange)="filterPlaces()" 
+        <ion-select [(ngModel)]="selectedType"
+                    (ionChange)="filterPlaces()"
                     placeholder="Type de lieu"
                     class="custom-select"
                     interface="popover"
-                    mode="ios">
+                    mode="ios"
+                    [disabled]="!isOnline && filteredPlaces.length === 0">
           <ion-select-option value="">Tous les types</ion-select-option>
           <ion-select-option *ngFor="let type of placeTypes" [value]="type">
             {{ type | titlecase }}
@@ -33,48 +57,42 @@
       </div>
     </div>
 
-    <ion-segment [(ngModel)]="selectedView" mode="ios" class="custom-segment">
+    <ion-segment [(ngModel)]="selectedView" mode="ios" class="custom-segment" *ngIf="isOnline || filteredPlaces.length > 0">
       <ion-segment-button value="list" class="custom-segment-button">
         <ion-label>Liste</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="map" class="custom-segment-button">
+      <ion-segment-button value="map" class="custom-segment-button" [disabled]="!isOnline">
+        <!-- Map view might be disabled or limited offline -->
         <ion-label>Carte</ion-label>
       </ion-segment-button>
     </ion-segment>
 
-    <div [ngSwitch]="selectedView" class="view-container">
+    <div [ngSwitch]="selectedView" class="view-container" *ngIf="isOnline || filteredPlaces.length > 0">
+      <!-- List View -->
       <div *ngSwitchCase="'list'" class="list-container">
-        <div class="table-container">
+        <div class="table-container" *ngIf="filteredPlaces.length > 0; else noResultsOrOfflineList">
           <table class="places-table">
             <thead>
               <tr>
                 <th (click)="sortBy = 'name'; filterPlaces()">
-                  <div class="th-content">
-                    Nom <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'name'"></ion-icon>
-                  </div>
+                  <div class="th-content">Nom <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'name'"></ion-icon></div>
                 </th>
                 <th (click)="sortBy = 'type'; filterPlaces()">
-                  <div class="th-content">
-                    Type <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'type'"></ion-icon>
-                  </div>
+                  <div class="th-content">Type <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'type'"></ion-icon></div>
                 </th>
                 <th>Adresse</th>
                 <th>Description</th>
                 <th (click)="sortBy = 'rating'; filterPlaces()">
-                  <div class="th-content">
-                    Note <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'rating'"></ion-icon>
-                  </div>
+                  <div class="th-content">Note <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'rating'"></ion-icon></div>
                 </th>
                 <th (click)="sortBy = 'reviewsCount'; filterPlaces()">
-                  <div class="th-content">
-                    Avis <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'reviewsCount'"></ion-icon>
-                  </div>
+                  <div class="th-content">Avis <ion-icon name="chevron-down-outline" *ngIf="sortBy === 'reviewsCount'"></ion-icon></div>
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let place of filteredPlaces" (click)="selectPlace(place)" class="place-row">
+              <tr *ngFor="let place of filteredPlaces" (click)="selectPlace(place); viewPlaceDetails(place.id!)" class="place-row">
                 <td class="name-cell">
                   <div class="place-icon-name">
                     <ion-icon [name]="getIconByType(place.type)" class="place-type-icon"></ion-icon>
@@ -87,7 +105,7 @@
                 <td>
                   <div class="rating-container">
                     <div class="stars">
-                      <ion-icon *ngFor="let star of [1,2,3,4,5]" 
+                      <ion-icon *ngFor="let star of [1,2,3,4,5]"
                                 [name]="star <= (place.averageRating || 0) ? 'star' : 'star-outline'"
                                 [color]="star <= (place.averageRating || 0) ? 'warning' : 'medium'">
                       </ion-icon>
@@ -99,42 +117,43 @@
                   <ion-badge color="primary" mode="ios">{{ place.reviewCount || 0 }}</ion-badge>
                 </td>
                 <td>
-                  <ion-button fill="clear" color="primary" (click)="ratePlace(place)" class="rate-button">
+                  <ion-button fill="clear" color="primary" (click)="ratePlace(place); $event.stopPropagation()" class="rate-button" [disabled]="!isOnline || hasUserReviewedPlace(place.id!)">
                     <ion-icon name="star"></ion-icon>
-                    Noter
+                    {{ hasUserReviewedPlace(place.id!) ? 'Noté' : 'Noter' }}
                   </ion-button>
                 </td>
               </tr>
             </tbody>
           </table>
-
-          <div class="no-results" *ngIf="filteredPlaces.length === 0">
+        </div>
+        <ng-template #noResultsOrOfflineList>
+          <div class="no-results ion-padding ion-text-center" *ngIf="isOnline">
             <ion-icon name="search-outline" class="no-results-icon"></ion-icon>
             <h3>Aucun lieu trouvé</h3>
-            <p>Essayez de modifier vos critères de recherche</p>
+            <p>Essayez de modifier vos critères de recherche.</p>
           </div>
-        </div>
+          <!-- Message if offline and no cached data shown in list -->
+           <div class="no-results ion-padding ion-text-center" *ngIf="!isOnline && filteredPlaces.length === 0">
+            <ion-icon name="cloud-offline-outline" class="no-results-icon"></ion-icon>
+            <h3>Données non disponibles hors-ligne</h3>
+            <p>Connectez-vous pour charger les lieux.</p>
+          </div>
+        </ng-template>
       </div>
 
+      <!-- Map View -->
       <div *ngSwitchCase="'map'" class="map-container">
-        <google-map [center]="center" [zoom]="zoom" height="100%" width="100%">
+        <google-map *ngIf="isOnline" [center]="center" [zoom]="zoom" height="100%" width="100%">
           <map-marker
             *ngFor="let place of filteredPlaces"
-            [position]="{ 
-              lat: place.latitude || 0, 
-              lng: place.longitude || 0 
-            }"
+            [position]="{ lat: place.latitude || 0, lng: place.longitude || 0 }"
             [title]="place.name"
             [options]="getMarkerOptions(place)"
             (markerClick)="selectPlace(place)">
           </map-marker>
-
           <map-info-window
-            *ngIf="selectedPlace"
-            [position]="{ 
-              lat: selectedPlace.latitude || 0, 
-              lng: selectedPlace.longitude || 0 
-            }"
+            *ngIf="selectedPlace && isOnline"
+            [position]="{ lat: selectedPlace.latitude || 0, lng: selectedPlace.longitude || 0 }"
             [options]="infoWindowOptions">
             <div class="info-window-content">
               <div class="info-window-header">
@@ -146,23 +165,30 @@
               </div>
               <div class="info-window-rating">
                 <div class="stars">
-                  <ion-icon *ngFor="let star of [1,2,3,4,5]" 
+                  <ion-icon *ngFor="let star of [1,2,3,4,5]"
                             [name]="star <= (selectedPlace.averageRating || 0) ? 'star' : 'star-outline'"
                             [color]="star <= (selectedPlace.averageRating || 0) ? 'warning' : 'medium'">
                   </ion-icon>
                 </div>
                 <span class="rating-value">{{ selectedPlace.averageRating || 0 | number:'1.1-1' }}</span>
               </div>
+              <ion-button expand="block" fill="clear" size="small" (click)="viewPlaceDetails(selectedPlace!.id!)">
+                Voir détails
+              </ion-button>
             </div>
           </map-info-window>
         </google-map>
+        <div *ngIf="!isOnline" class="offline-map-placeholder ion-padding ion-text-center">
+          <ion-icon name="map-outline" size="large" color="medium"></ion-icon>
+          <p>La vue carte est indisponible en mode hors-ligne.</p>
+        </div>
       </div>
     </div>
   </div>
 </ion-content>
 
 <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-  <ion-fab-button (click)="addNewPlace()" color="primary" class="custom-fab">
+  <ion-fab-button (click)="addNewPlace()" color="primary" class="custom-fab" [disabled]="!isOnline">
     <ion-icon name="add"></ion-icon>
   </ion-fab-button>
-</ion-fab> 
+</ion-fab>

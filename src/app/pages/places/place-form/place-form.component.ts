@@ -84,7 +84,7 @@ type PlaceType = 'Restaurant' | 'Bar' | 'Bibliotheque' | 'Salle_sport';
         </ion-item>
 
         <ion-button expand="block" type="submit" [disabled]="!placeForm.valid || isSubmitting" class="ion-margin-top">
-          {{ isSubmitting ? 'Envoi en cours...' : 'Proposer l\'établissement' }}
+          Proposer l\'établissement
         </ion-button>
       </form>
     </ion-content>
